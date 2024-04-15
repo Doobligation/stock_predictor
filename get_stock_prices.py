@@ -13,8 +13,7 @@ def get_stock_prices():
     folder_path = "Historic_Prices"
 
     # Create the directory if it doesn't exist
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+    os.makedirs(folder_path, exist_ok=True)
     os.chdir(folder_path)
 
     for stock in tqdm(stocks, desc='Downloading', unit='stock'):
