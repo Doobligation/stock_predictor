@@ -1,4 +1,5 @@
 import os
+import time
 from tqdm import tqdm
 import requests
 import SECRET
@@ -10,9 +11,12 @@ Get the free API Key from them! Now, you still have to pay for quarterly announc
 If this is a problem, we will get them from yfinance again.
 """
 
-stocks = ["AAPL", "MSFT"]
-days = ["quarter", "annual"]
-statements = ["income-statement", "balance-sheet-statement", "cash-flow-statement"]
+# stocks = ["AAPL", "MSFT"] # testing purpose
+days = ["annual"]
+#"quarter",
+statements = ["income-statement"]
+#, "balance-sheet-statement", "cash-flow-statement"
+
 
 def make_folders():
     for day in days:
@@ -20,21 +24,25 @@ def make_folders():
             os.makedirs(f"Financial_Data/{day}/{statement}", exist_ok=True)
 
 
-
 def get_financial_data():
+    with open("stock_list.txt", "r") as f1:
+        stocks = f1.read().split()
+
     for stock in tqdm(stocks, desc='Downloading', unit='stock'):
         for day in days:
             for statement in statements:
-                response = requests.get(f"https://financialmodelingprep.com/api/v3/{statement}/{stock}?period={day}&apikey={SECRET.YOUR_API_KEY}")
+                response = requests.get(
+                    f"https://financialmodelingprep.com/api/v3/{statement}/{stock}?period={day}&apikey={SECRET.YOUR_API_KEY}")
                 folder_path = f"Financial_Data/{day}/{statement}"
                 filename = os.path.join(folder_path, f"{stock}.json")
 
-                with open(filename, "w") as f:
-                    json.dump(response.json(), f, indent=4)
+                with open(filename, "w") as f2:
+                    json.dump(response.json(), f2, indent=4)
+
+                time.sleep(2)
 
                 # Figuring out where it went wrong!
                 # print(day, statement, stock)
-
 
 
 def testing():
@@ -46,6 +54,7 @@ def testing():
 
     with open(filename, "w") as f:
         json.dump(response2.json(), f, indent=4)
+
 
 if __name__ == "__main__":
     make_folders()
