@@ -1,12 +1,17 @@
-import pandas as pd
-import os
 import json
+from datetime import datetime
+import pandas as pd
+import numpy as np
+import os
+import time
 from collections import defaultdict
 
 with open("stock_list.txt", "r") as r:
     stocks = r.read().split()
 
-features = ['date', 'symbol',
+spy = pd.read_csv("sp500_df.csv", index_col="Date", parse_dates=True)
+
+features = ['date', 'symbol', 'stock_price', 'stock_change', 'sp500_price', 'sp500_change',
             'revenue', 'costOfRevenue', 'grossProfit', 'grossProfitRatio', 'researchAndDevelopmentExpenses',
             'generalAndAdministrativeExpenses', 'sellingAndMarketingExpenses',
             'sellingGeneralAndAdministrativeExpenses', 'otherExpenses', 'operatingExpenses', 'costAndExpenses',
@@ -84,8 +89,12 @@ strings above this comment.
 
 def add_data(tickers):
     final_result = pd.DataFrame()
+
     for stock in tickers:
         temp = defaultdict(list)
+
+        stock_df = pd.read_csv(f"Historic_Prices/{stock}.csv", index_col="Date", parse_dates=True)
+
         for statement in statements:
             point = df_dic.get(statement)
 
@@ -96,10 +105,11 @@ def add_data(tickers):
             with open(file_path, "r") as ff:
                 ft = json.load(ff)
 
+            # Getting all the relevant data from our downloaded /Financial_Data into one csv file
             for x in range(0, len(ft)):
                 values = []
                 if statement == "income-statement":
-                    for key in point[:2] + df_dic.get(statement)[8:len(point) - 2]:
+                    for key in point[:2] + [np.NAN, np.NAN, np.NAN, np.NaN] + df_dic.get(statement)[8:len(point) - 2]:
                         values.append(ft[x].get(key))
                 else:
                     for key in df_dic.get(statement)[8:len(point) - 2]:
@@ -110,11 +120,47 @@ def add_data(tickers):
         val_ls = [v for v in temp.values()]
         val_ls.reverse()
 
+        # Parsing all the prices and its changes in each stock and the S&P 500
+        for x in range(0, len(val_ls)):
+            time_obj = datetime.strptime(val_ls[x][0], "%Y-%m-%d")
+            unix_time = time.mktime(time_obj.timetuple())
+
+            current_date = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d")
+            one_year_later = datetime.fromtimestamp(unix_time + 31536000).strftime(
+                "%Y-%m-%d"
+            )
+            sp500_price = float(spy.loc[current_date, "Adj Close"])
+            stock_price = float(stock_df.loc[current_date, "Adj Close"])
+
+            try:
+                sp500_1y_price = float(spy.loc[one_year_later, "Adj Close"])
+                stock_1y_price = float(stock_df.loc[one_year_later, "Adj Close"])
+            except KeyError:
+                break
+
+            sp500_p_change = round(
+                ((sp500_1y_price - sp500_price) / sp500_price * 100), 2
+            )
+            stock_p_change = round(
+                ((stock_1y_price - stock_price) / stock_price * 100), 2
+            )
+
+            additive = [
+                stock_price,
+                stock_p_change,
+                sp500_price,
+                sp500_p_change
+            ]
+
+            val_ls[x] = val_ls[x][:2] + additive + val_ls[x][6:]
+
         for row in val_ls:
             temp_df = pd.DataFrame([row])
             final_result = pd.concat([final_result, temp_df], ignore_index=True)
 
     final_result.columns = features
+    # final_result.fillna(0, inplace=True)
+    final_result.dropna(axis=0, subset=["stock_price", "stock_change"], inplace=True)
     final_result.to_csv("fin_data.csv", index=False)
 
 
@@ -125,7 +171,8 @@ This function tests only two stocks: MSFT and AAPL
 
 
 def testing():
-    tickers = ["MSFT", "AAPL"]
+    tickers = ["AAPL", "MSFT"]
+
     add_data(tickers)
 
 
