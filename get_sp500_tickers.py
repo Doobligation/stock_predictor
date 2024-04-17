@@ -12,7 +12,9 @@ ticker_str = ls.to_string(index=False, header=False).strip()
 # Split the string by newline character to get individual ticker symbols
 ticker_symbols = ticker_str.split()
 ticker_symbols_sorted = sorted(ticker_symbols)
+
 # Write the ticker symbols to a text file, each on a separate line
 with open("stock_list.txt", 'w') as kongs:
     for ticker in ticker_symbols_sorted:
         kongs.write(ticker + '\n')
+
