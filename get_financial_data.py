@@ -9,13 +9,14 @@ import json
 We are going to use API from financialmodelingprep.com
 Get the free API Key from them! Now, you still have to pay for quarterly announcements
 If this is a problem, we will get them from yfinance again.
+
+Most importantly, make a python file called SECRET and put in your API key with
+YOUR_API_KEY = ~~~~~
 """
 
 # stocks = ["AAPL", "MSFT"] # testing purpose
-days = ["annual"]
-#"quarter",
-statements = ["income-statement"]
-#, "balance-sheet-statement", "cash-flow-statement"
+days = ["annual, quarter"]
+statements = ["income-statement", "balance-sheet-statement", "cash-flow-statement"]
 
 
 def make_folders():
