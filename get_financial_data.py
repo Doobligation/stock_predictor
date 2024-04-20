@@ -15,7 +15,7 @@ YOUR_API_KEY = ~~~~~
 """
 
 # stocks = ["AAPL", "MSFT"] # testing purpose
-days = ["annual, quarter"]
+days = ["annual", "quarter"]
 statements = ["income-statement", "balance-sheet-statement", "cash-flow-statement"]
 
 
@@ -33,14 +33,12 @@ def get_financial_data():
         for day in days:
             for statement in statements:
                 response = requests.get(
-                    f"https://financialmodelingprep.com/api/v3/{statement}/{stock}?period={day}&apikey={SECRET.YOUR_API_KEY}")
+                f"https://financialmodelingprep.com/api/v3/{statement}/{stock}?period={day}&apikey={SECRET.YOUR_API_KEY}")
                 folder_path = f"Financial_Data/{day}/{statement}"
                 filename = os.path.join(folder_path, f"{stock}.json")
 
                 with open(filename, "w") as f2:
                     json.dump(response.json(), f2, indent=4)
-
-                time.sleep(2)
 
                 # Figuring out where it went wrong!
                 # print(day, statement, stock)

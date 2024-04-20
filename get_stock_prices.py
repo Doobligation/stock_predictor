@@ -3,14 +3,14 @@ from tqdm import tqdm
 import os
 import pandas as pd
 
-START_DATE = "2002-01-01"
+START_DATE = "2009-01-01"
 END_DATE = "2024-04-12"
 
 
 # Getting all the Adjacent Closing Price and other necessary information
 # for every stock from Yahoo Finance
 def get_stock_prices():
-    with open("temp.txt") as l:
+    with open("stock_list.txt") as l:
         stocks = l.read().split("\n")
 
     folder_path = "Historic_Prices"

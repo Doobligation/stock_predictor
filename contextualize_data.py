@@ -1,10 +1,15 @@
 import json
 from datetime import datetime
 import pandas as pd
-import numpy as np
 import os
 import time
 from collections import defaultdict
+import warnings
+
+from tqdm import tqdm
+
+# Ignore FutureWarning messages
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 with open("stock_list.txt", "r") as r:
     stocks = r.read().split()
@@ -90,14 +95,16 @@ strings above this comment.
 def add_data(tickers):
     final_result = pd.DataFrame()
 
-    for stock in tickers:
+    for stock in tqdm(tickers, desc="Contextualizing", unit="stock"):
         temp = defaultdict(list)
 
         stock_df = pd.read_csv(f"Historic_Prices/{stock}.csv", index_col="Date", parse_dates=True)
 
         for statement in statements:
             point = df_dic.get(statement)
-
+            """
+            Change the annual to quarter if you want to compare it with quarterly data.
+            """
             folder_path = f"Financial_Data/annual/{statement}"
             file_name = f"{stock}.json"
             file_path = os.path.join(folder_path, file_name)
@@ -106,10 +113,10 @@ def add_data(tickers):
                 ft = json.load(ff)
 
             # Getting all the relevant data from our downloaded /Financial_Data into one csv file
-            for x in range(0, len(ft)):
+            for x in range(1, len(ft)):
                 values = []
                 if statement == "income-statement":
-                    for key in point[:2] + [np.NAN, np.NAN, np.NAN, np.NaN] + df_dic.get(statement)[8:len(point) - 2]:
+                    for key in point[:2] + [0, 0, 0, 0] + df_dic.get(statement)[8:len(point) - 2]:
                         values.append(ft[x].get(key))
                 else:
                     for key in df_dic.get(statement)[8:len(point) - 2]:
@@ -122,21 +129,25 @@ def add_data(tickers):
 
         # Parsing all the prices and its changes in each stock and the S&P 500
         for x in range(0, len(val_ls)):
-            time_obj = datetime.strptime(val_ls[x][0], "%Y-%m-%d")
-            unix_time = time.mktime(time_obj.timetuple())
-
+            try:
+                time_obj = datetime.strptime(val_ls[x][0], "%Y-%m-%d")
+                unix_time = time.mktime(time_obj.timetuple())
+            except TypeError:
+                continue
             current_date = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d")
+            # divide it by 4 if you want quarter
             one_year_later = datetime.fromtimestamp(unix_time + 31536000).strftime(
                 "%Y-%m-%d"
             )
-            sp500_price = float(spy.loc[current_date, "Adj Close"])
-            stock_price = float(stock_df.loc[current_date, "Adj Close"])
 
             try:
+                sp500_price = (float(spy.loc[current_date, "Adj Close"]))
+                stock_price = (float(stock_df.loc[current_date, "Adj Close"]))
+
                 sp500_1y_price = float(spy.loc[one_year_later, "Adj Close"])
                 stock_1y_price = float(stock_df.loc[one_year_later, "Adj Close"])
             except KeyError:
-                break
+                continue
 
             sp500_p_change = round(
                 ((sp500_1y_price - sp500_price) / sp500_price * 100), 2
@@ -171,7 +182,7 @@ This function tests only two stocks: MSFT and AAPL
 
 
 def testing():
-    tickers = ["AAPL", "MSFT"]
+    tickers = ["MSFT", "AAPL"]
 
     add_data(tickers)
 
