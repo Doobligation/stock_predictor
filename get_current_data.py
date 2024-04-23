@@ -86,6 +86,21 @@ df_dic = {
     "cash-flow-statement": features3
 }
 
+remove = [
+    'generalAndAdministrativeExpenses', 'sellingAndMarketingExpenses',
+    'goodwill', 'intangibleAssets', 'goodwillAndIntangibleAssets',
+    'otherAssets', 'taxPayables',
+    'otherLiabilities', 'capitalLeaseObligations',
+    'othertotalStockholdersEquity', 'minorityInterest',
+    'effectOfForexChangesOnCash'
+]
+
+def removing_parameter():
+    for x in remove:
+        for features_list in [features, features1, features2, features3]:
+            if x in features_list:
+                features_list.remove(x)
+
 """
 This method will try to put all the relative data into one csv file for python to analyze later.
 Obviously, there will be some data that maybe irrelevant to our own choosing so please configure them in the features
@@ -93,20 +108,19 @@ strings above this comment.
 """
 
 
-def add_data(tickers):
+def add_data(tickers, timely="annual"):
     final_result = pd.DataFrame()
+    removing_parameter()
 
     for stock in tqdm(tickers, desc="Contextualizing", unit="stock"):
         temp = defaultdict(list)
-
-        stock_df = pd.read_csv(f"Historic_Prices/{stock}.csv", index_col="Date", parse_dates=True)
 
         for statement in statements:
             point = df_dic.get(statement)
             """
             Change the annual to quarter if you want to compare it with quarterly data.
             """
-            folder_path = f"Financial_Data/annual/{statement}"
+            folder_path = f"Financial_Data/{timely}/{statement}"
             file_name = f"{stock}.json"
             file_path = os.path.join(folder_path, file_name)
 
@@ -164,5 +178,5 @@ def testing():
 
 
 if __name__ == "__main__":
-    add_data(stocks)
+    add_data(stocks, timely="quarter")
     # testing()
