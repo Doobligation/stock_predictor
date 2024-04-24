@@ -157,7 +157,6 @@ def add_data(tickers, timely="annual"):
             except TypeError:
                 continue
             current_date = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d")
-            # divide it by 4 if you want quarter
             time_pass = 31536000
             if timely == "quarter":
                 time_pass /= 4
@@ -202,7 +201,7 @@ def add_data(tickers, timely="annual"):
 
 
 """
-testing is for obviously testing purpose (duh)
+testing is for obviously testing purpose
 This function tests only two stocks: MSFT and AAPL
 """
 
