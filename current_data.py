@@ -178,5 +178,5 @@ def testing():
 
 
 if __name__ == "__main__":
-    add_data(stocks, timely="quarter")
+    add_data(stocks, timely="annual")
     # testing()
