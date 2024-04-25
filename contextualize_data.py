@@ -14,6 +14,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 with open("stock_list.txt", "r") as r:
     stocks = r.read().split()
 
+START_DATE = "2009-01-01"
+END_DATE = "2024-04-01"
 spy = pd.read_csv("sp500_df.csv", index_col="Date", parse_dates=True)
 
 features = [  # income statement
@@ -137,6 +139,10 @@ def add_data(tickers, timely="annual"):
             # Getting all the relevant data from our downloaded /Financial_Data into one csv file
             for x in range(1, len(ft)):
                 values = []
+
+                if point[0] < START_DATE or point[0] > END_DATE:
+                    continue
+
                 if statement == "income-statement":
                     for key in point[:2] + [0, 0, 0, 0] + df_dic.get(statement)[8:len(point) - 2]:
                         values.append(ft[x].get(key))
