@@ -44,32 +44,20 @@ def backtest():
     """
 
     # clf = make_pipeline(StandardScaler(), SVC(gamma='auto'))
-    # clf.fit(X_train, y_train)
-    #
     # clf = make_pipeline(StandardScaler(), RandomForestClassifier(n_estimators=250, random_state=0, max_depth=100))
-    # clf.fit(X_train, y_train)
-
     clf = make_pipeline(StandardScaler(), GradientBoostingClassifier(n_estimators=250, max_depth=5))
+
     clf.fit(X_train, y_train)
 
-    print("Classifier performance\n")
-    print(f"Accuracy score: {accuracy_score(X_test, y_test): .2f}")
-
     y_pred = clf.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
 
+    print("Classifier performance\n")
+    print(f"Accuracy score: {accuracy: .2f}\n")
     print(sum(y_pred))
-
 
     if sum(y_pred) == 0:
         print("No stocks predicted!")
-
-    else:
-        invest_list = z[y_pred].tolist()
-        print(
-            f"{len(invest_list)} stocks predicted to outperform the S&P500 by more than {OUTPERFORMANCE}%:"
-        )
-        print(" ".join(invest_list))
-        return invest_list
 
 
 # def testing():
